@@ -61,10 +61,13 @@ TZ=Asia/Bangkok
 **`discord-bot/.env`**
 ```
 DISCORD_TOKEN=
-DISCORD_CHANNEL_ID=
+DISCORD_CHANNEL_ID=          # post reminders to a server channel
+DISCORD_DM_USER_ID=          # (optional) also DM a specific user
 GOOGLE_FORM_URL=https://forms.gle/...
 TZ=Asia/Bangkok
 ```
+
+`DISCORD_CHANNEL_ID` and `DISCORD_DM_USER_ID` are independent — set either or both. To find your user ID, enable Developer Mode in Discord settings, then right-click your username and select **Copy User ID**.
 
 **`frontend/.env.local`**
 ```
