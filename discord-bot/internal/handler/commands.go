@@ -13,7 +13,7 @@ const timezone = "Asia/Bangkok"
 var Commands = []*discordgo.ApplicationCommand{
 	{
 		Name:        "order",
-		Description: "Show lunch order status and form link",
+		Description: "Check today's lunch order window and get the submission link (open 11:00 AM – 4:00 PM)",
 	},
 }
 
