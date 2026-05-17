@@ -50,7 +50,8 @@ setup-hooks:
 clean-branches:
 	@echo "==> Branches already merged into main (will be deleted):"
 	@git branch --merged main | grep -v '^\*\|main' || echo "  (none)"
-	@git branch --merged main | grep -v '^\*\|main' | xargs -r git branch -d
+	@MERGED=$$(git branch --merged main | grep -v '^\*\|main'); \
+	  [ -n "$$MERGED" ] && echo "$$MERGED" | xargs git branch -d || true
 	@echo "==> Pruning stale remote-tracking refs..."
 	@git fetch --prune 2>/dev/null || true
 	@echo "Done. Run 'git branch -a' to verify."
