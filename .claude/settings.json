@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/scripts/capture-learning.sh"
+            "command": "bash -c 'bash \"$(git rev-parse --show-toplevel)/.claude/scripts/capture-learning.sh\"'"
           }
         ]
       }
