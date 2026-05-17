@@ -54,12 +54,28 @@ func Start(dg *discordgo.Session) {
 
 func sendMessage(dg *discordgo.Session, content string) {
 	channelID := os.Getenv("DISCORD_CHANNEL_ID")
-	if channelID == "" {
-		log.Println("DISCORD_CHANNEL_ID not set")
+	dmUserID := os.Getenv("DISCORD_DM_USER_ID")
+
+	if channelID == "" && dmUserID == "" {
+		log.Println("no notification target set (DISCORD_CHANNEL_ID or DISCORD_DM_USER_ID)")
 		return
 	}
-	if _, err := dg.ChannelMessageSend(channelID, content); err != nil {
-		log.Printf("send discord message: %v", err)
+
+	if channelID != "" {
+		if _, err := dg.ChannelMessageSend(channelID, content); err != nil {
+			log.Printf("send channel message: %v", err)
+		}
+	}
+
+	if dmUserID != "" {
+		ch, err := dg.UserChannelCreate(dmUserID)
+		if err != nil {
+			log.Printf("open DM channel: %v", err)
+			return
+		}
+		if _, err := dg.ChannelMessageSend(ch.ID, content); err != nil {
+			log.Printf("send DM: %v", err)
+		}
 	}
 }
 
