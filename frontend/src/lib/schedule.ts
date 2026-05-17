@@ -16,7 +16,8 @@ export function getWindowStatus(now: Date = new Date()): WindowStatus {
   const close = new Date(bkk);
   close.setHours(16, 0, 0, 0);
 
-  const isOpen = bkk >= open && bkk < close;
+  const isWeekend = bkk.getDay() === 0 || bkk.getDay() === 6;
+  const isOpen = !isWeekend && bkk >= open && bkk < close;
   const isFriday = bkk.getDay() === 5;
 
   let message = "";

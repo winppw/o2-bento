@@ -17,20 +17,17 @@ var Commands = []*discordgo.ApplicationCommand{
 	},
 }
 
-func HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.Type != discordgo.InteractionApplicationCommand {
-		return
-	}
-	if i.ApplicationCommandData().Name != "order" {
-		return
-	}
-
+// BuildStatusMessage returns the /order reply text for a given point in time.
+// Extracted for testability — HandleInteraction calls this with time.Now().
+func BuildStatusMessage(now time.Time, formURL string) string {
 	loc, _ := time.LoadLocation(timezone)
-	now := time.Now().In(loc)
+	now = now.In(loc)
 
 	open := time.Date(now.Year(), now.Month(), now.Day(), 11, 0, 0, 0, loc)
 	close := time.Date(now.Year(), now.Month(), now.Day(), 16, 0, 0, 0, loc)
-	isOpen := now.After(open) && now.Before(close)
+	weekday := now.Weekday()
+	isWeekend := weekday == time.Saturday || weekday == time.Sunday
+	isOpen := !isWeekend && !now.Before(open) && now.Before(close)
 
 	var status, extra string
 	if isOpen {
@@ -47,7 +44,18 @@ func HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		extra = "\n📅 You can also submit your **Monday** order today."
 	}
 
-	msg := fmt.Sprintf("**Lunch Order Status**\n%s%s\n\n%s", status, extra, os.Getenv("GOOGLE_FORM_URL"))
+	return fmt.Sprintf("**Lunch Order Status**\n%s%s\n\n%s", status, extra, formURL)
+}
+
+func HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+	if i.ApplicationCommandData().Name != "order" {
+		return
+	}
+
+	msg := BuildStatusMessage(time.Now(), os.Getenv("GOOGLE_FORM_URL"))
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

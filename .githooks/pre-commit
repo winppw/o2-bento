@@ -1,0 +1,32 @@
+#!/bin/bash
+# Pre-commit security guard
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# 1. Block accidentally staged .env files
+STAGED=$(git diff --cached --name-only)
+for f in $STAGED; do
+  if echo "$f" | grep -qE '\.env$|\.env\.local$|\.env\.production$'; then
+    echo "ERROR: Attempting to commit $f — remove it from staging (git reset HEAD $f)"
+    exit 1
+  fi
+done
+
+# 2. Check for common secret patterns in staged content
+if git diff --cached | grep -qE '(DISCORD_TOKEN|password|secret|api_key)\s*=\s*["\x27][A-Za-z0-9/+]{20,}'; then
+  echo "WARNING: Possible secret value detected in diff. Review carefully."
+  echo "         If intentional, commit with: git commit --no-verify"
+  exit 1
+fi
+
+# 3. go vet on changed Go modules
+for dir in backend discord-bot; do
+  if git diff --cached --name-only | grep -q "^$dir/"; then
+    echo "Running go vet in $dir..."
+    (cd "$dir" && go vet ./...)
+  fi
+done
+
+echo "Pre-commit checks passed."
