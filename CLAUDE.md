@@ -90,7 +90,7 @@ cd discord-bot && go run ./cmd/bot
 
 ## Branching Strategy
 
-`main` is the only long-lived branch. All work happens on short-lived branches that are deleted after merging.
+`main` is the only permanent branch. All other branches are temporary and must be deleted after merging.
 
 ### Naming convention
 | Type | Pattern | Example |
@@ -101,47 +101,25 @@ cd discord-bot && go run ./cmd/bot
 
 ### Workflow
 ```bash
-# 1. Start from latest main
-git checkout main && git pull
+# 1. Start from main
+git checkout main
 
-# 2. Create a branch
+# 2. Create a working branch
 git checkout -b feat/your-feature
 
 # 3. Work, commit, test
 make test
 
-# 4. Merge back with --no-ff to preserve branch history
+# 4. Merge into main (--no-ff keeps branch history visible)
 git checkout main
 git merge --no-ff feat/your-feature -m "merge: feat/your-feature into main"
 
-# 5. Delete the branch immediately — keep the list lean
+# 5. Delete the branch — NEVER delete main, only the feature branch
 git branch -d feat/your-feature
-# If it was pushed:
-git push origin --delete feat/your-feature
-```
 
-### Keeping branches lean
-Delete merged branches right after merging — never let stale branches accumulate.
-
-```bash
-# See what's already merged into main (safe to delete)
-git branch --merged main
-
-# Delete all local branches already merged into main (except main itself)
+# Or use the Makefile shortcut to delete all already-merged branches at once:
 make clean-branches
-
-# Delete a specific remote branch
-git push origin --delete <branch-name>
-
-# Prune remote-tracking refs that no longer exist on origin
-git fetch --prune
 ```
-
-### Rules
-- Never commit directly to `main`
-- Delete the feature branch on the same day you merge it
-- If a branch is older than 7 days without a merge, either merge or drop it
-- `main` must always pass `make test` — fix forward, never force-push
 
 ## Key Files
 
