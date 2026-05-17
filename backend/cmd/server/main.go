@@ -4,21 +4,27 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 	"github.com/joho/godotenv"
 
 	"github.com/o2ai/launch-assistant/backend/internal/handler"
+	"github.com/o2ai/launch-assistant/backend/internal/middleware"
 )
 
 func main() {
 	_ = godotenv.Load()
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(corsMiddleware)
+	r.Use(chimiddleware.Logger)
+	r.Use(chimiddleware.Recoverer)
+	r.Use(middleware.SecurityHeaders)
+	r.Use(middleware.CORS)
+	// 60 requests per minute per IP — protects against polling abuse
+	r.Use(httprate.LimitByIP(60, time.Minute))
 
 	r.Get("/status", handler.GetStatus)
 
@@ -28,17 +34,4 @@ func main() {
 	}
 	log.Printf("backend listening on :%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
-}
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
 }

@@ -25,11 +25,15 @@ func GetWindowStatus(now time.Time) WindowStatus {
 	open := time.Date(now.Year(), now.Month(), now.Day(), openHour, openMinute, 0, 0, loc)
 	close := time.Date(now.Year(), now.Month(), now.Day(), closeHour, closeMinute, 0, 0, loc)
 
-	isOpen := now.After(open) && now.Before(close)
-	isFriday := now.Weekday() == time.Friday
+	weekday := now.Weekday()
+	isWeekend := weekday == time.Saturday || weekday == time.Sunday
+	isOpen := !isWeekend && !now.Before(open) && now.Before(close)
+	isFriday := weekday == time.Friday
 
 	msg := ""
 	switch {
+	case isWeekend || now.After(close) || now.Equal(close):
+		msg = "Order window is closed for today."
 	case now.Before(open):
 		msg = "Order window opens at 11:00 AM."
 	case isOpen && isFriday:
