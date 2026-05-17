@@ -1,4 +1,4 @@
-.PHONY: test test-backend test-discord test-frontend security-check setup-hooks
+.PHONY: test test-backend test-discord test-frontend security-check setup-hooks clean-branches
 
 test: test-backend test-discord test-frontend
 
@@ -32,3 +32,11 @@ setup-hooks:
 	git config core.hooksPath .githooks
 	chmod +x .githooks/pre-commit
 	@echo "Git hooks configured — pre-commit guard is active."
+
+clean-branches:
+	@echo "==> Branches already merged into main (will be deleted):"
+	@git branch --merged main | grep -v '^\*\|main' || echo "  (none)"
+	@git branch --merged main | grep -v '^\*\|main' | xargs -r git branch -d
+	@echo "==> Pruning stale remote-tracking refs..."
+	@git fetch --prune 2>/dev/null || true
+	@echo "Done. Run 'git branch -a' to verify."
