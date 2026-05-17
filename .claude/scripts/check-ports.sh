@@ -3,8 +3,8 @@
 # Usage: bash .claude/scripts/check-ports.sh
 #        PORT_FRONTEND=3001 PORT_BACKEND=9090 bash .claude/scripts/check-ports.sh
 
-FRONTEND_PORT="${PORT_FRONTEND:-3000}"
-BACKEND_PORT="${PORT_BACKEND:-8080}"
+FRONTEND_PORT="${PORT_FRONTEND:-5111}"
+BACKEND_PORT="${PORT_BACKEND:-5160}"
 
 FAILED=0
 

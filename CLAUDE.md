@@ -45,6 +45,16 @@ o2ai-launch-assistant/
 | Discord Bot | Go 1.22, discordgo |
 | Containerization | Docker Compose |
 
+## Port Range — 5100–5199
+
+All services in this project use ports in the **5100–5199** range to avoid conflicts with other local services.
+
+| Port | Service | Mnemonic |
+|------|---------|----------|
+| 5111 | Frontend (Next.js) | open hour = 11:00 AM |
+| 5160 | Backend (Go API) | deadline = 16:00 |
+| 5101–5159 | Reserved for future services | — |
+
 ## Environment Variables
 
 ### Backend (`backend/.env`)
