@@ -1,5 +1,19 @@
-.PHONY: test test-backend test-discord test-frontend security-check setup-hooks clean-branches
+.PHONY: test test-backend test-discord test-frontend security-check setup-hooks clean-branches check-ports up dev
 
+## Run
+check-ports:
+	@bash .claude/scripts/check-ports.sh
+
+up: check-ports
+	docker compose up --build
+
+dev: check-ports
+	@echo "Starting services in dev mode..."
+	@echo "  frontend → http://localhost:3000"
+	@echo "  backend  → http://localhost:8080"
+	docker compose up --build --watch
+
+## Test
 test: test-backend test-discord test-frontend
 
 test-backend:
