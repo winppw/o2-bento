@@ -2,7 +2,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"
+      - "5111:5111"
     env_file: ./frontend/.env.local
     depends_on:
       - backend
@@ -10,7 +10,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8080:8080"
+      - "5160:5160"
     env_file: ./backend/.env
 
   discord-bot:

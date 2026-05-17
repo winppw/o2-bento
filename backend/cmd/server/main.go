@@ -30,7 +30,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "5160"
 	}
 	log.Printf("backend listening on :%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
