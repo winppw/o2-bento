@@ -110,9 +110,12 @@ cd discord-bot && go run ./cmd/bot
 | Chore / infra | `chore/<slug>` | `chore/update-deps` |
 
 ### Workflow
+
+**Always work on a branch — never commit directly to `main`.**
+
 ```bash
 # 1. Start from main
-git checkout main
+git checkout main && git pull
 
 # 2. Create a working branch
 git checkout -b feat/your-feature
@@ -120,16 +123,19 @@ git checkout -b feat/your-feature
 # 3. Work, commit, test
 make test
 
-# 4. Merge into main (--no-ff keeps branch history visible)
-git checkout main
-git merge --no-ff feat/your-feature -m "merge: feat/your-feature into main"
+# 4. Push the branch and open a PR for human review
+git push -u origin feat/your-feature
+gh pr create --title "feat: your-feature" --body "$(cat <<'EOF'
+## Summary
+- What changed and why
 
-# 5. Delete the branch — NEVER delete main, only the feature branch
-git branch -d feat/your-feature
-
-# Or use the Makefile shortcut to delete all already-merged branches at once:
-make clean-branches
+## Test plan
+- [ ] Tested locally
+EOF
+)"
 ```
+
+**Do NOT merge into `main` yourself.** Open the PR and wait for a human to review and merge it. Branch deletion happens after merge.
 
 ## Key Files
 
