@@ -10,6 +10,8 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+const sendTimeout = 30 * time.Second
+
 const timezone = "Asia/Bangkok"
 
 // BuildOpenMessage returns the 11 AM open reminder text.
@@ -61,25 +63,35 @@ func sendMessage(dg *discordgo.Session, content string) {
 		return
 	}
 
-	if channelID != "" {
-		if _, err := dg.ChannelMessageSend(channelID, content); err != nil {
-			log.Printf("send channel message: %v", err)
-		} else {
-			log.Printf("channel message sent to %s", channelID)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if channelID != "" {
+			if _, err := dg.ChannelMessageSend(channelID, content); err != nil {
+				log.Printf("send channel message: %v", err)
+			} else {
+				log.Printf("channel message sent to %s", channelID)
+			}
 		}
-	}
 
-	if dmUserID != "" {
-		ch, err := dg.UserChannelCreate(dmUserID)
-		if err != nil {
-			log.Printf("open DM channel for user %s: %v", dmUserID, err)
-			return
+		if dmUserID != "" {
+			ch, err := dg.UserChannelCreate(dmUserID)
+			if err != nil {
+				log.Printf("open DM channel for user %s: %v", dmUserID, err)
+				return
+			}
+			if _, err := dg.ChannelMessageSend(ch.ID, content); err != nil {
+				log.Printf("send DM to user %s: %v", dmUserID, err)
+			} else {
+				log.Printf("DM sent to user %s", dmUserID)
+			}
 		}
-		if _, err := dg.ChannelMessageSend(ch.ID, content); err != nil {
-			log.Printf("send DM to user %s: %v", dmUserID, err)
-		} else {
-			log.Printf("DM sent to user %s", dmUserID)
-		}
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(sendTimeout):
+		log.Printf("sendMessage: timed out after %s (Discord session may be reconnecting)", sendTimeout)
 	}
 }
 
