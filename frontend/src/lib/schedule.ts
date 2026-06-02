@@ -6,22 +6,29 @@ export interface WindowStatus {
   message: string;
 }
 
+const BKK_OFFSET_MS = 7 * 60 * 60 * 1000; // UTC+7
+
 export function getWindowStatus(now: Date = new Date()): WindowStatus {
-  // Convert to Asia/Bangkok (UTC+7)
-  const bkk = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+  // Shift now by +7 h so that getUTC* methods read Bangkok wall-clock values.
+  const proxy = new Date(now.getTime() + BKK_OFFSET_MS);
+  const bkkHour = proxy.getUTCHours();
+  const bkkMinute = proxy.getUTCMinutes();
+  const bkkDay = proxy.getUTCDay();
+  const y = proxy.getUTCFullYear();
+  const mo = proxy.getUTCMonth();
+  const d = proxy.getUTCDate();
 
-  const open = new Date(bkk);
-  open.setHours(11, 0, 0, 0);
+  // Real UTC timestamps for 11:00 and 16:00 Bangkok time on the same calendar day.
+  const openAt = new Date(Date.UTC(y, mo, d, 11 - 7, 0, 0, 0));
+  const closeAt = new Date(Date.UTC(y, mo, d, 16 - 7, 0, 0, 0));
 
-  const close = new Date(bkk);
-  close.setHours(16, 0, 0, 0);
-
-  const isWeekend = bkk.getDay() === 0 || bkk.getDay() === 6;
-  const isOpen = !isWeekend && bkk >= open && bkk < close;
-  const isFriday = bkk.getDay() === 5;
+  const isWeekend = bkkDay === 0 || bkkDay === 6;
+  const bkkMins = bkkHour * 60 + bkkMinute;
+  const isOpen = !isWeekend && bkkMins >= 11 * 60 && bkkMins < 16 * 60;
+  const isFriday = bkkDay === 5;
 
   let message = "";
-  if (bkk < open) {
+  if (!isWeekend && bkkMins < 11 * 60) {
     message = "Order window opens at 11:00 AM.";
   } else if (isOpen && isFriday) {
     message = "Order window is open. You can also submit Monday's order today.";
@@ -31,7 +38,7 @@ export function getWindowStatus(now: Date = new Date()): WindowStatus {
     message = "Order window is closed for today.";
   }
 
-  return { isOpen, openAt: open, closeAt: close, isFridayExtra: isFriday, message };
+  return { isOpen, openAt, closeAt, isFridayExtra: isFriday, message };
 }
 
 export function formatTimeRemaining(target: Date, now: Date = new Date()): string {
