@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -54,21 +55,39 @@ func Start(dg *discordgo.Session) {
 	log.Println("reminder scheduler started (Asia/Bangkok)")
 }
 
+// channelIDs parses DISCORD_CHANNEL_IDS (comma-separated) with fallback to
+// the legacy DISCORD_CHANNEL_ID single-value variable.
+func channelIDs() []string {
+	if v := os.Getenv("DISCORD_CHANNEL_IDS"); v != "" {
+		var ids []string
+		for _, id := range strings.Split(v, ",") {
+			if trimmed := strings.TrimSpace(id); trimmed != "" {
+				ids = append(ids, trimmed)
+			}
+		}
+		return ids
+	}
+	if v := os.Getenv("DISCORD_CHANNEL_ID"); v != "" {
+		return []string{v}
+	}
+	return nil
+}
+
 func sendMessage(dg *discordgo.Session, content string) {
-	channelID := os.Getenv("DISCORD_CHANNEL_ID")
+	channels := channelIDs()
 	dmUserID := os.Getenv("DISCORD_DM_USER_ID")
 
-	if channelID == "" && dmUserID == "" {
-		log.Println("no notification target set (DISCORD_CHANNEL_ID or DISCORD_DM_USER_ID)")
+	if len(channels) == 0 && dmUserID == "" {
+		log.Println("no notification target set (DISCORD_CHANNEL_IDS or DISCORD_DM_USER_ID)")
 		return
 	}
 
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		if channelID != "" {
+		for _, channelID := range channels {
 			if _, err := dg.ChannelMessageSend(channelID, content); err != nil {
-				log.Printf("send channel message: %v", err)
+				log.Printf("send channel message to %s: %v", channelID, err)
 			} else {
 				log.Printf("channel message sent to %s", channelID)
 			}

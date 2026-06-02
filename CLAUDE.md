@@ -68,7 +68,8 @@ TZ=Asia/Bangkok
 ### Discord Bot (`discord-bot/.env`)
 ```
 DISCORD_TOKEN=
-DISCORD_CHANNEL_ID=
+DISCORD_CHANNEL_IDS=id1,id2,id3   # comma-separated; falls back to DISCORD_CHANNEL_ID
+DISCORD_DM_USER_ID=
 GOOGLE_FORM_URL=https://forms.gle/...
 TZ=Asia/Bangkok
 ```
