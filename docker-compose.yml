@@ -17,6 +17,3 @@ services:
     build: ./discord-bot
     env_file: ./discord-bot/.env
     restart: unless-stopped
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
